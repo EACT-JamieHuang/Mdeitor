@@ -1,12 +1,11 @@
-const {  ipcMain, dialog } = require('electron');
+const {ipcMain, dialog} = require('electron');
 const path = require('path');
 const fs = require('fs');
+const fsp = require('fs/promises');
 
 // 处理目录选择
 ipcMain.handle('dialog:selectDirectory', async () => {
-  const result = await dialog.showOpenDialog({
-    properties: ['openDirectory']
-  });
+  const result = await dialog.showOpenDialog({properties: ['openDirectory']});
   return result.filePaths[0];
 });
 
@@ -60,5 +59,26 @@ ipcMain.handle('fs:saveFile', async (event, filePath, data) => {
   } catch (error) {
     console.error('Failed to save file:', error);
     throw error;
+  }
+});
+
+// 複製含 markdown 檔案的資料夾
+ipcMain.handle('fs:copyFolderWithMarkdown', async (event, src, dst) => {
+  try {
+    await fsp.mkdir(dst, {recursive: true});
+
+    const files = await fsp.readdir(src);
+    for (const file of files) {
+      if (file.toLowerCase().endsWith('.md')) {
+        const srcFile = path.join(src, file);
+        const dstFile = path.join(dst, file);
+        await fsp.copyFile(srcFile, dstFile);
+      }
+    }
+
+    return true;
+  } catch (err) {
+    console.error('複製 markdown 檔案錯誤:', err);
+    throw err;
   }
 });
