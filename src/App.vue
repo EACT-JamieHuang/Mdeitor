@@ -337,6 +337,7 @@ export default {
             });
             return row;
         },
+        //
         async dirWalker() {
             const selectedDirectory = await window.electronAPI.selectDirectory();
             if (!selectedDirectory) return;
@@ -349,6 +350,8 @@ export default {
 
             const filtered = this.filterLatestEntries(flatPaths);
             this.folderTable = filtered;
+            this.folderSelection = [];
+            this.newFolderName = ''; // 每次打開時重置資料夾名稱
             this.dirWalkerDialog = true;
         },
         isDuplicate(list, index, key) {
